@@ -123,11 +123,11 @@ def mutate_children(children_data):
             if chance < 0.7:
                 # print('mutate')
                 scale = 1
-                if i in [7, 9]:
+                if j in [7, 9]:
                     scale = 1 * 1e-2  # for less change 1e-3
-                elif i in [8, 10]:
+                elif j in [8, 10]:
                     scale = 1 * 1e-2  # for less change 1e-4
-                elif i in [5]:
+                elif j in [5]:
                     scale = 1e-2  # for less change 1e-2
                 if random.random() < 0.1:
                     scale *= 2
@@ -159,13 +159,13 @@ def get_children(parent_data):
 
 
 ################################
-## function calls for genetic algorithm
+# function calls for genetic algorithm
 ################################
 
 main()
 
 ################################
-## Debugging
+# Debugging
 ################################
 
 
@@ -273,7 +273,7 @@ def variation_test_for_zero():
 
 
 ################################
-## function calls for debugging
+# function calls for debugging
 ################################
 
 # for i in range(1, 11):
