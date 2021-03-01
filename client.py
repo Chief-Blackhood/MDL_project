@@ -32,9 +32,12 @@ def send_request(id, vector, path):
     return response
 
 
-def get_errors(vector):
-    for i in range(len(vector)):
-        vector[i] = max(min(vector[i], 10), -10)
+def get_errors(raw_vector):
+    vector = []
+    for i in range(len(raw_vector)):
+        v = max(min(raw_vector[i], 10), -10)
+        vector.append(v)
+
     for i in vector:
         assert 0 <= abs(i) <= 10
     assert len(vector) == MAX_DEG
@@ -83,7 +86,7 @@ def get_parents(limit=10):
         d = {
             "MSE": p["errors"],
             "score": p["score"],
-            "generated_vector_used": p["vector"],
+            "vector": p["vector"],
         }
         data.append(d)
 
