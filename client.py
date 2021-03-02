@@ -64,8 +64,8 @@ def get_parents(limit=10):
                     "errors": 1,
                     "score": {
                         "$add": [
-                            {"$multiply": [{"$arrayElemAt": ["$errors", 0]}, 0.5]},
-                            {"$multiply": [{"$arrayElemAt": ["$errors", 1]}, 0.5]},
+                            {"$multiply": [{"$arrayElemAt": ["$errors", 0]}, 0.5]}, # training
+                            {"$multiply": [{"$arrayElemAt": ["$errors", 1]}, 0.5]}, # validation
                         ]
                     },
                     "vector": 1,

@@ -19,10 +19,10 @@ overfit_vector = [
 ]
 generated_vectors = []
 probability = []
-generations = 10
+generations = 5
 population = 20
-mating_size = 10
-parents_participating = 5
+mating_size = 20  # 10 - 15
+parents_participating = 3  # 5 - 10
 
 
 def get_initial_parents():
@@ -51,7 +51,6 @@ def main():
     print(parents)
     write_file = open("generations.txt", "a")
 
-
     for _ in range(generations):
         parent_file = open("last_parent.txt", "w")
         children = mate(parents)
@@ -63,7 +62,7 @@ def main():
             next_gen[i]["vector"] = vector
             json.dump(next_gen[i], write_file)
             json.dump(next_gen[i], parent_file)
-            parent_file.write('\n')
+            parent_file.write("\n")
             write_file.write("\n")
         write_file.write("\n")
 
@@ -75,7 +74,7 @@ def get_score(data):
     # a = MSE[0] * 0.2 + 0.8 * MSE[1]
     a = MSE[0] * 0.5 + 0.5 * MSE[1]
     # a = MSE[0] * 0.4 + 0.6 * MSE[1]
-    # a = (MSE[0]*0.3+0.7*MSE[1])
+    # a = MSE[0] * 0.3 + 0.7 * MSE[1]
     # print(a)
     return a
 
@@ -84,7 +83,7 @@ def crossover(parent1, parent2):
     parent1 = np.array(parent1)
     parent2 = np.array(parent2)
 
-    deviation = 3
+    deviation = 2  # 2 - 5
     chance = random.random()
     if chance < 0.5:
         beta = 2 * chance ** (1 / (deviation + 1))
@@ -139,6 +138,7 @@ def mutate(child):
                 scale = 1 * 1e-4  # for less change 1e-4
             elif i in [5]:
                 scale = 1e-2  # for less change 1e-2
+            scale *= 5  # for large mutation
             random_add = (random.random() - 0.5) * scale
             if i == 0:
                 child[i] = random_add
@@ -169,5 +169,5 @@ def get_next_gen(parents, children):
     return next_gen
 
 
-# main()
-print(get_parents(1))
+main()
+# print(get_parents(1))

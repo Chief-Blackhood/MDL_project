@@ -162,7 +162,7 @@ def get_children(parent_data):
 # function calls for genetic algorithm
 ################################
 
-main()
+# main()
 
 ################################
 # Debugging
