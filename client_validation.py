@@ -45,6 +45,7 @@ def get_errors(raw_vector):
     if data is not None:
         print("db")
         return data["errors"]
+    # return [1e10,1e10]
     print("server")
     errors = json.loads(send_request(SECRET_KEY, vector, "geterrors"))
     records.insert_one({"errors": errors, "vector": vector})
@@ -64,8 +65,12 @@ def get_parents(limit=10):
                     "errors": 1,
                     "score": {
                         "$add": [
-                            {"$multiply": [{"$arrayElemAt": ["$errors", 0]}, 0.5]}, # training
-                            {"$multiply": [{"$arrayElemAt": ["$errors", 1]}, 0.5]}, # validation
+                            {
+                                "$multiply": [{"$arrayElemAt": ["$errors", 0]}, 0]
+                            },  # training
+                            {
+                                "$multiply": [{"$arrayElemAt": ["$errors", 1]}, 1]
+                            },  # validation
                         ]
                     },
                     "vector": 1,
