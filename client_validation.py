@@ -35,7 +35,8 @@ def send_request(id, vector, path):
 def get_errors(raw_vector):
     vector = []
     for i in range(len(raw_vector)):
-        v = max(min(raw_vector[i], 10), -10)
+        # v = max(min(raw_vector[i], 10), -10)
+        v = raw_vector[i]
         vector.append(v)
 
     for i in vector:
@@ -59,23 +60,29 @@ def get_overfit_vector():
 def get_parents(limit=10):
     ans = records.aggregate(
         [
-            {"$match": {"errors": {"$elemMatch": {"$lte": 1e13}}}},
+            # {"$match": {"errors": {"$elemMatch": {"$lte": 1e13}}}},
             {
                 "$project": {
                     "errors": 1,
-                    "score": {
-                        "$add": [
-                            {
-                                "$multiply": [{"$arrayElemAt": ["$errors", 0]}, 0]
-                            },  # training
-                            {
-                                "$multiply": [{"$arrayElemAt": ["$errors", 1]}, 1]
-                            },  # validation
-                        ]
-                    },
+                    # "score": {
+                    #     "$add": [
+                    #         {
+                    #             "$multiply": [{"$arrayElemAt": ["$errors", 0]}, 0.5]
+                    #         },  # training
+                    #         {
+                    #             "$multiply": [{"$arrayElemAt": ["$errors", 1]}, 0.5]
+                    #         },  # validation
+                    #     ]
+                    # },
+                    "training": {"$arrayElemAt": ["$errors", 0]},
+                    "validation": {"$arrayElemAt": ["$errors", 1]},
                     "vector": 1,
                 }
             },
+            {"$match": {"training": {"$gte": 4e12}}},
+            {"$match": {"training": {"$lte": 6e12}}},
+            {"$match": {"validation": {"$gte": 2e12}}},
+            {"$match": {"validation": {"$lte": 4e12}}},
             {"$sort": {"score": 1}},
             {"$limit": limit},
         ]
@@ -90,7 +97,7 @@ def get_parents(limit=10):
         parents.append(p["vector"])
         d = {
             "MSE": p["errors"],
-            "score": p["score"],
+            # "score": p["score"],
             "vector": p["vector"],
         }
         data.append(d)
