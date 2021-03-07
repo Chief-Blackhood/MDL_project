@@ -4,6 +4,8 @@ import random
 import json
 import numpy as np
 
+first_gen = False
+
 
 overfit_vector = [
     0.0,
@@ -17,6 +19,32 @@ overfit_vector = [
     -2.04721003e-06,
     -1.59792834e-08,
     9.98214034e-10,
+]
+rank20_vector = [
+    -0.5315347166952884,
+    -2.0522509655713694,
+    -3.1692939908232605,
+    6.1450778806927575,
+    -0.050785981221236225,
+    -1.8218574931408493e-15,
+    -0.1756376755478551,
+    2.9528452684408868e-05,
+    -2.117280506724165e-06,
+    -1.701803847854941e-08,
+    9.021927460810928e-10,
+]
+goodrank25_vector = [
+    -9.09008485495793,
+    4.842398546864905,
+    -1.6593932871285404,
+    6.03983343064555,
+    -1.0371339627715168,
+    -1.8469794957039708e-15,
+    0.37312278547894107,
+    2.9184881000925245e-05,
+    -2.0638474169621287e-06,
+    -1.526937696656356e-08,
+    9.190051080273302e-10,
 ]
 generated_vectors = []
 probability = []
@@ -59,10 +87,10 @@ def get_initial_parents():
         # p1 = {"vector": v, "MSE": get_errors(v), "generation": 1}
         # p1["score"] = get_score(p1)
         copy = []
-        for j in range(len(overfit_vector)):
-            copy.append(overfit_vector[j])
+        for j in range(len(goodrank25_vector)):
+            copy.append(goodrank25_vector[j])
 
-        v = mutate(copy, 1)
+        v = mutate(copy)
         p1 = {"generation": 1, "MSE": get_errors(v), "vector": v}
         p1["score"] = get_score(p1)
         data.append(p1)
@@ -71,13 +99,15 @@ def get_initial_parents():
 
 
 def main():
-    # parents = get_initial_parents()
-    parents = []
-    with open("last_parent_leaderboard.txt", "r") as last_parent:
-        for line in last_parent:
-            parent = json.loads(line)
-            parent["score"] = get_score(parent)
-            parents.append(parent)
+    if first_gen:
+        parents = get_initial_parents()
+    else:
+        parents = []
+        with open("last_parent_leaderboard.txt", "r") as last_parent:
+            for line in last_parent:
+                parent = json.loads(line)
+                parent["score"] = get_score(parent)
+                parents.append(parent)
 
     # print(parents)
     write_file = open("generations_leaderboard.txt", "a")
@@ -103,16 +133,17 @@ def main():
 
 def get_score(data):
     MSE = data["MSE"]
+    a = MSE[0] + MSE[1]
     # a = (MSE[0]*0.1+0.9*MSE[1])
     # a = (MSE[0]*0.0+1.0*MSE[1])
     # a = MSE[0] * 0.2 + 0.8 * MSE[1]
     # a = MSE[0] * 0.5 + 0.5 * MSE[1]
     # a = MSE[0] * 0.4 + 0.6 * MSE[1]
     # a = MSE[0] * 0.3 + 0.7 * MSE[1]
-    train_min = 4e12
-    train_max = 6e12
-    val_min = 2e12
-    val_max = 4e12
+    train_min = 38e11
+    train_max = 8e12
+    val_min = 38e11
+    val_max = 8e12
 
     for i in range(15, -1, -1):
         factor = 1.2
@@ -135,8 +166,6 @@ def get_score(data):
 
     # if MSE[0] < 40e11 or MSE[0] > 6e12 or MSE[1] < 20e11 or MSE[1] > 4e12:
     #     return 5e15
-
-    a = MSE[0] + MSE[1]
 
     # if a > 1e14 or a < 1e10:
     #     return 0
@@ -204,10 +233,8 @@ def mate(all_parents):
         submission_mutation.append(child1)
         submission_mutation.append(child2)
 
-        child1 = {"generation": generation,
-                  "MSE": get_errors(child1), "vector": child1}
-        child2 = {"generation": generation,
-                  "MSE": get_errors(child2), "vector": child2}
+        child1 = {"generation": generation, "MSE": get_errors(child1), "vector": child1}
+        child2 = {"generation": generation, "MSE": get_errors(child2), "vector": child2}
 
         child1["score"] = get_score(child1)
         child2["score"] = get_score(child2)
@@ -228,12 +255,12 @@ def mutate(child, prob=0.3):
         if chance < prob:
             scale = 1
             if i in [7, 9]:
-                scale = 1e-3  # for less change 1e-3
+                scale = 10 * 1e-3  # for less change 1e-3
             elif i in [8, 10]:
-                scale = 1e-4  # for less change 1e-4
+                scale = 10 * 1e-4  # for less change 1e-4
             elif i in [5]:
                 scale = 1e-2  # for less change 1e-2
-            scale *= 10  # for large mutation
+            # scale *= 10  # for large mutation
             random_add = (random.random() - 0.5) * scale
             if i == 0:
                 if abs(random_add) <= 10:
@@ -287,10 +314,18 @@ def get_next_gen(parents, children):
 #             9.311835351664468e-10,
 #         ]))
 # leaderboard
+print(
+    submit(
+        [2.096435824649727, 6.854410010154593, -3.047649288276091, 6.039833430645549, -1.0772600799101457, -1.825221801210638e-15, 1.2017084638551592, 2.9526992539482523e-05, -2.069692770325736e-06, -1.5029303133528182e-08, 9.226294164167137e-10]
+    )
+)
+# rank 25 error 4.7e12
+# {"generation": 12, "MSE": [4635577827633.479, 4962072117899.779], "vector": [2.096435824649727, 6.854410010154593, -3.047649288276091, 6.039833430645549, -1.0772600799101457, -1.825221801210638e-15, 1.2017084638551592, 2.9526992539482523e-05, -2.069692770325736e-06, -1.5029303133528182e-08, 9.226294164167137e-10], "score": 9597649945533.258}
 
-# rank 73, error 3e13
-print(submit([1.2962915781727469, 9.9600010793821, 0.9962290773965993, 7.2888479417681005, 0.4406469383812006, 2.8399467993299038e-15, -
-              1.634243290266433, 7.030789806183286e-05, -3.7126004479390947e-06, -3.8600799191779113e-08, 1.6207015117735694e-09]))
+# temp = []
+# for _ in range(11):
+#     temp.append(random.random() * 20 - 10)
+# print(submit(temp))
 
 
 # rank 73, error 3e13
@@ -336,17 +371,17 @@ print(submit([1.2962915781727469, 9.9600010793821, 0.9962290773965993, 7.2888479
 # print(
 #     submit(
 #         [
-#             -0.06723646215001355,
-#             -1.0329749111105289,
-#             -7.550413484104738,
-#             6.211556994478153,
-#             -0.05538165193189995,
-#             -3.1908079940589373e-15,
-#             -0.045310849061531155,
-#             6.683923992143137e-06,
-#             -1.5700378768886358e-06,
-#             -2.507984710652146e-09,
-#             7.183167446734617e-10,
+#             1.0131872505490749,
+#             -2.462818793194241,
+#             0.15717107252282003,
+#             9.305804527364357,
+#             -0.004032359329763721,
+#             -1.8266231882472374e-15,
+#             0.0803572819261498,
+#             2.9523627015813384e-05,
+#             -2.1173454173673293e-06,
+#             -1.7041966866366392e-08,
+#             9.022976062882336e-10,
 #         ]
 #     )
 # )
